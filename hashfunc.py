@@ -1,5 +1,6 @@
 from blocks import BlockOps
 from core import CoreCrypto
+from alphabet import AlphabetOps
 
 # Хеш-функция MerDam (lab2)
 class HashFunc:
@@ -39,3 +40,46 @@ class HashFunc:
                 CoreCrypto.C_block([C, E], "16") +
                 CoreCrypto.C_block([D, E], "16")
         )
+
+    @staticmethod
+    def KDF(
+            MAT_IN: str,
+            SALT_IN: str,
+            CON_IN: list[str],
+            SIZE_IN: list[int],
+            iter_in: int,
+    ):
+        tmp = MAT_IN + SALT_IN
+
+        for _ in range(iter_in + 1):
+            ext = HashFunc.MerDam_hash(tmp)
+            tmp = ext + tmp
+
+        PRK = tmp
+        out = []
+
+        for i in range(len(SIZE_IN)):
+            q = (SIZE_IN[i] + 63) // 64
+
+            rem = i
+            res = ""
+
+            while rem > 0:
+                h = rem % 32
+                res += AlphabetOps.num2sym(h)
+                rem = (rem - h) // 32
+
+            if q > 0:
+                hash_val = PRK
+                for _ in range(q):
+                    tmp = hash_val + CON_IN[i] + PRK
+                    hash_val = HashFunc.MerDam_hash(tmp)
+                    res = hash_val + res
+            else:
+                tmp = PRK + CON_IN[i] + PRK
+                res = HashFunc.MerDam_hash(tmp)
+
+            out_i = res[:SIZE_IN[i]]
+            out.append(out_i)
+
+        return out

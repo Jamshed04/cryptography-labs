@@ -2,6 +2,7 @@ from numeric import NumericOps
 from prng import PRNGEngine
 from sblock import SBlock
 from alphabet import AlphabetOps
+from blocks import BlockOps
 
 
 # SP-сеть (lab4)
@@ -157,3 +158,38 @@ class SPNetwork:
         for i in range(r_in - 1, -1, -1):
             block = SPNetwork.inv_round_SP(block, key_set[i], i)
         return block
+
+    @staticmethod
+    def mac_CBC(MSG_IN, IV_IN, KEY_IN):
+        R = 8
+        m = len(MSG_IN) // 16
+        ctr = 0
+        out = ""
+        feedback = IV_IN
+
+        for i in range(m):
+            inp = MSG_IN[i * 16: i * 16 + 16]
+            temp = BlockOps.textxor(feedback, inp)
+            feedback = SPNetwork.frw_SPNet(temp, KEY_IN, R)
+            out = out + feedback
+
+        return feedback
+
+    @staticmethod
+    def enc_CTR(MSG_IN, IV_IN, KEY_IN):
+        R = 8
+        m = len(MSG_IN) // 16
+        IV_starter = IV_IN[0:12]
+        IV_ender = "____"
+        ctr = 0
+        out = ""
+
+        for i in range(m):
+            IV_ender = NumericOps.num2block(ctr)
+            IV = IV_starter + IV_ender
+            keystream = SPNetwork.frw_SPNet(IV, KEY_IN, R)
+            inp = MSG_IN[i * 16: i * 16 + 16]
+            out = out + BlockOps.textxor(inp, keystream)
+            ctr = ctr + 1
+
+        return out

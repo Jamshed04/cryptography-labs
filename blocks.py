@@ -1,4 +1,5 @@
 from alphabet import AlphabetOps
+from numeric import NumericOps
 
 # Операции над блоками (lab2)
 class BlockOps:
@@ -55,3 +56,38 @@ class BlockOps:
         if out_n == 4:
             return BlockOps.add_txt(BlockOps.sub_txt(a1, a3), BlockOps.sub_txt(a2, a4))
         return "input_error"
+
+    @staticmethod
+    def textxor(A_IN, B_IN):
+        out = ""
+        for i in range(4):
+            a = A_IN[i * 4: i * 4 + 4]
+            b = B_IN[i * 4: i * 4 + 4]
+
+            A = NumericOps.dec2bin(NumericOps.block2num(a))
+            B = NumericOps.dec2bin(NumericOps.block2num(b))
+
+            C = [(A[j] + B[j]) % 2 for j in range(20)]
+
+            out += NumericOps.num2block(NumericOps.bin2dec(C))
+        return out
+
+    @staticmethod
+    def combine(STRSET_IN):
+        out = ""
+
+        for i in range(len(STRSET_IN)):
+            out += STRSET_IN[i]
+
+        return out
+
+    @staticmethod
+    def blockxor(A_IN, B_IN):
+        A = NumericOps.dec2bin(NumericOps.block2num(A_IN))
+        B = NumericOps.dec2bin(NumericOps.block2num(B_IN))
+
+        C = [(A[j] + B[j]) % 2 for j in range(20)]
+
+        c = NumericOps.bin2dec(C)
+
+        return NumericOps.num2block(c)
